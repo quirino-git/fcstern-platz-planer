@@ -659,7 +659,33 @@ export default function PlanPage() {
   return (
     <main style={{ padding: 16 }}>
       <style jsx global>{`
+
+          /* Screen vs print sections */
+          .print-only { display: none; }
+          .screen-only { display: block; }
+
         @media print {
+
+          /* Print the normal screen layout */
+          .print-only { display: none !important; }
+          .screen-only { display: block !important; }
+
+          /* Bigger headings for print */
+          .print-day-title { font-size: 32px !important; font-weight: 900 !important; margin: 8px 0 10px !important; }          .print-time-tile .slot-label { font-size: 36px !important; font-weight: 900 !important; line-height: 1.05 !important; }
+/* Avoid splitting a time block across pages */
+          .print-slot { break-inside: avoid; page-break-inside: avoid; }
+          /* Each next slot starts on a new page */
+          .print-slot + .print-slot { break-before: page; page-break-before: always; }
+          /* Add top offset on new pages (reliable in print engines) */
+          .print-slot + .print-slot::before { content: ""; display: block; height: 24mm; }
+
+          /* Avoid splitting pitch cards */
+          .pitch-card { break-inside: avoid; page-break-inside: avoid; }
+
+          /* Remove horizontal scrollbars & fit to page width */
+          .facility-grid-wrap { overflow: visible !important; }
+          .facility-grid { min-width: 0 !important; grid-template-columns: repeat(3, 1fr) !important; }
+
           @page { margin: 12mm; }
           html, body {
             background: #fff !important;
@@ -858,8 +884,8 @@ export default function PlanPage() {
       </section>
 
       {/* Übersicht: Zeit links, Anlage rechts in physischer Anordnung */}
-      <section style={{ marginTop: 16 }}>
-        <h2 style={{ fontSize: 16, margin: "10px 0" }}>{wdLabel(weekday)} – Übersicht</h2>
+      <section className="screen-only" style={{ marginTop: 16 }}>
+        <h2 className="print-day-title" style={{ fontSize: 16, margin: "10px 0" }}>{wdLabel(weekday)} – Übersicht</h2>
 
         {slotsForDayDisplay.length === 0 ? (
           <div style={{ opacity: 0.7, marginTop: 10 }}>Keine Slots für diesen Tag. (Supabase: training_slots.weekday prüfen)</div>
@@ -872,23 +898,26 @@ export default function PlanPage() {
             return (
               <div
                 key={cellK}
+                className="print-slot"
                 style={{
                   display: "block",
                 }}
               >
 
                 {/* facility grid */}
-                <div style={{ overflowX: "auto" }}>
+                <div className="facility-grid-wrap" style={{ overflowX: "auto" }}>
                   <div
+                    className="facility-grid"
                     style={{
                       minWidth: 1120,
                       display: "grid",
+                      
                       gridTemplateColumns: "repeat(3, minmax(360px, 1fr))",
                       gap: 12,
                     }}
                   >
                                         {/* Zeit-Kachel im freien Platz (oben links über Grosskunstrasen Links) */}
-                    <div
+                    <div className="print-time-tile"
                       style={{
                         gridColumn: "1",
                         gridRow: "1",
@@ -898,11 +927,7 @@ export default function PlanPage() {
                         background: "transparent",
                       }}
                     >
-                      <div style={{ fontWeight: 900, fontSize: 14 }}>{s.label}</div>
-                      <div style={{ opacity: 0.7, fontSize: 12 }}>
-                        {shortTime(s.start_time)}–{shortTime(s.end_time)}
-                      </div>
-                    </div>
+                      <div className="slot-label" style={{ fontWeight: 900, fontSize: 14 }}>{s.label}</div></div>
 
 {/* placed cards according to facility */}
                     {arrangedPitches.placed.map((it, idx) => {
@@ -1456,7 +1481,7 @@ export default function PlanPage() {
             );
           })}
         </div>
-      </section>
+</section>
     </main>
   );
 }
