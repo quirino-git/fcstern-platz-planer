@@ -1077,134 +1077,152 @@ async function doCancel() {
         }
       
 
-/* ---------- Print layout (A4) ---------- */
-/* ---------- Print layout (A4) ---------- */
-@page { margin: 10mm 10mm 12mm 10mm; }
-@media print {
-  :root {
-    color-scheme: light;
-    --pp-gap: 6mm;
-    --pp-col1: 54mm;
-    --pp-fieldH: 54mm;
-    --pp-timePad: calc(var(--pp-fieldH) + 18mm);
-  }
+/* ---------- Print ---------- */
+.print-only { display: none; }
 
+@page { margin: 10mm 10mm 12mm 10mm; }
+
+@media print {
   html, body {
     background: #fff !important;
     color: #000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* hide interactive UI + helper text */
-  .btn, .select, .input, .del, .no-print { display: none !important; }
-
-  /* hide non-pitch cards (date nav, booking forms, dialogs) */
-  .card:not(.pitch) { display: none !important; }
-
-  main {
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  /* Print ONLY the plan area */
+  body * { visibility: hidden !important; }
+  .print-area, .print-area * { visibility: visible !important; }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
   }
 
-  /* headings */
-  .row { color: #000 !important; }
-  .badge { background: transparent !important; border: 1px solid #000 !important; color: #000 !important; }
+  .print-only { display: block !important; }
 
-  /* one slot per page */
-  .slotRow { break-after: page; page-break-after: always; margin-top: 0 !important; }
-  .slotRow:last-child { break-after: auto; page-break-after: auto; }
+  .printHeader { margin: 0 0 6mm 0; }
+  .printHeaderTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10mm;
+  }
+  .printTitle { font-size: 14pt; font-weight: 950; }
+  .printMeta { font-size: 9pt; opacity: 0.75; white-space: nowrap; }
+  .printDay { margin-top: 2mm; font-size: 16pt; font-weight: 950; }
 
-  /* 2 + 3 layout with time sitting in the “empty” spot */
-  .grid {
-    grid-template-columns: var(--pp-col1) 1fr 1fr !important;
-    gap: var(--pp-gap) !important;
+  /* One slot per page */
+  .slotRow {
+    break-after: page;
+    page-break-after: always;
+    margin-top: 0 !important;
+  }
+  .slotRow:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* Slot grid layout:
+     1) time column (spans 2 rows)
+     2) bottom-left pitch (2nd row only)
+     3) top+bottom middle pitch
+     4) top+bottom right pitch
+  */
+  .slotRow .grid {
+    display: grid !important;
+    grid-template-columns: 28mm 54mm 48mm 48mm !important;
+    grid-template-rows: auto auto !important;
+    gap: 4mm !important;
     align-items: start !important;
   }
 
+  /* Children: [1]=time, [2]=pitch1, [3]=pitch2, [4]=pitch3, [5]=pitch4, [6]=pitch5 */
+  .slotRow .grid > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+  .slotRow .grid > :nth-child(2) { grid-column: 3; grid-row: 1; }
+  .slotRow .grid > :nth-child(3) { grid-column: 4; grid-row: 1; }
+  .slotRow .grid > :nth-child(4) { grid-column: 2; grid-row: 2; }
+  .slotRow .grid > :nth-child(5) { grid-column: 3; grid-row: 2; }
+  .slotRow .grid > :nth-child(6) { grid-column: 4; grid-row: 2; }
+
   .timeCard {
-    padding-top: var(--pp-timePad) !important;
-    font-size: 20px !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    font-size: 18pt !important;
     font-weight: 950 !important;
     opacity: 1 !important;
-    color: #000 !important;
   }
 
-  /* pitch cards */
-  .card.pitch {
+  /* Light theme for cards + pitch */
+  main { background: #fff !important; }
+  .card {
     background: #fff !important;
-    border: 1px solid #000 !important;
-    border-radius: 12px !important;
+    color: #000 !important;
+    border: 1px solid #999 !important;
     box-shadow: none !important;
   }
-  .pitch { padding: 10px !important; }
-  .pitchHead * { color: #000 !important; text-shadow: none !important; }
-  .pitchHead div { text-shadow: none !important; }
+  .badge {
+    border: 1px solid #999 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .pitch { padding: 6px !important; }
+  .pitchHead { gap: 6px !important; }
+  .pitchHead > div > div:first-child { font-size: 10pt !important; }
+  .pitchHead > div > div:last-child { font-size: 8pt !important; opacity: 0.75 !important; }
 
-  /* field */
   .field {
     background: #fff !important;
-    border: 1px solid #000 !important;
-    border-radius: 12px !important;
-    padding: 8px !important;
+    border: 1px solid #999 !important;
   }
-  .fieldLines { stroke: rgba(0,0,0,0.55) !important; opacity: 1 !important; }
-  .fieldGrid { height: var(--pp-fieldH) !important; border: 1px solid rgba(0,0,0,0.35) !important; }
+  .fieldLines {
+    stroke: rgba(0,0,0,0.55) !important;
+    opacity: 1 !important;
+  }
+  .fieldGrid {
+    height: 34mm !important;
+    border: 1px solid #bdbdbd !important;
+  }
 
-  /* cells */
-  .cell { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.22) !important; color: #000 !important; }
-  .cell.free { background: transparent !important; }
-  .freeText { color: rgba(0,0,0,0.55) !important; opacity: 1 !important; text-shadow: none !important; }
-  .cell.booked { background-color: rgba(0,0,0,0.06) !important; background-image: none !important; }
-  .cellLabel { color: #000 !important; text-shadow: none !important; font-weight: 800 !important; }
+  .cell {
+    box-shadow: inset 0 0 0 1px #c8c8c8 !important;
+    font-size: 8pt !important;
+    color: #000 !important;
+    text-shadow: none !important;
+  }
+  .cell.free { background: #fff !important; }
+  .freeText { opacity: 0.55 !important; color: #000 !important; }
+  .cell.booked {
+    background-color: #e6e6e6 !important;
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(0,0,0,0.10) 0 10px,
+      rgba(0,0,0,0.00) 10px 20px
+    ) !important;
+  }
+  .cell .del { display: none !important; }
 
-  /* group labels: no dark pill in print */
   .groupPill {
-    background: transparent !important;
-    border: 0 !important;
+    background: rgba(255,255,255,0.92) !important;
+    border: 1px solid #999 !important;
     box-shadow: none !important;
     color: #000 !important;
     text-shadow: none !important;
-    font-weight: 800 !important;
-    padding: 0 !important;
+    font-size: 8pt !important;
   }
-}
-
-/* Portrait tweaks */
-@media print and (orientation: portrait) {
-  :root {
-    --pp-gap: 5mm;
-    --pp-col1: 42mm;
-    --pp-fieldH: 44mm;
-    --pp-timePad: calc(var(--pp-fieldH) + 16mm);
-  }
-}
-
-/* Landscape tweaks */
-@media print and (orientation: landscape) {
-  :root {
-    --pp-gap: 6mm;
-    --pp-col1: 54mm;
-    --pp-fieldH: 54mm;
-    --pp-timePad: calc(var(--pp-fieldH) + 18mm);
-  }
-}
 }
 
 `}</style>
 
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: 10 }}>
+      <div className="row no-print" style={{ justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ fontSize: 26, fontWeight: 950 }}>Trainings‑Verteilung</div>
         <div style={{ opacity: 0.8, fontSize: 13 }}>
           {totals.pitches} Felder • {totals.slots} Slots • {totals.bookings} Belegungen
         </div>
       </div>
 
-      <div className="card" style={{ padding: 14 }}>
+      <div className="card no-print" style={{ padding: 14 }}>
         <div className="row" style={{ justifyContent: "space-between" }}>
           <div className="row">
             <button className="btn" disabled={busy} onClick={() => setSelectedDate((d) => addDaysYMD(d, -1))}>
@@ -1238,7 +1256,7 @@ async function doCancel() {
         )}
       </div>
 
-      <div className="card" style={{ padding: 14, marginTop: 12 }}>
+      <div className="card no-print" style={{ padding: 14, marginTop: 12 }}>
         <div style={{ fontWeight: 900, marginBottom: 10 }}>Belegung hinzufügen</div>
         <div className="row">
           <div className="row">
@@ -1332,11 +1350,42 @@ async function doCancel() {
         </div>
       </div>
 
-      <div style={{ marginTop: 14, opacity: 0.85, fontWeight: 900 }}>
-        {weekdayNameDE(weekday)} – Übersicht ({fmtDateDE(selectedDate)})
-      </div>
+      <div className="print-area">
 
-      {daySlots.length === 0 ? (
+
+        <div className="print-only printHeader">
+
+
+          <div className="printHeaderTop">
+
+
+            <div className="printTitle">Trainings‑Verteilung</div>
+
+
+            <div className="printMeta">{totals.pitches} Felder • {totals.slots} Slots • {totals.bookings} Belegungen</div>
+
+
+          </div>
+
+
+          <div className="printDay">{weekdayNameDE(weekday)} – Übersicht ({fmtDateDE(selectedDate)})</div>
+
+
+        </div>
+
+
+
+        <div className="no-print" style={{ marginTop: 14, opacity: 0.85, fontWeight: 900 }}>
+
+
+          {weekdayNameDE(weekday)} – Übersicht ({fmtDateDE(selectedDate)})
+
+
+        </div>
+
+
+
+        {daySlots.length === 0 ? (
         <div style={{ marginTop: 10, opacity: 0.8 }}>
           Für diesen Wochentag sind keine Slots in <code>training_slots</code> gepflegt.
         </div>
@@ -1510,6 +1559,8 @@ async function doCancel() {
           </div>
         ))
       )}
+
+      </div>
 
       {cancelOpen && cancelBooking && (
         <div
